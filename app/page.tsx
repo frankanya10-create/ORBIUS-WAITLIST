@@ -8,7 +8,7 @@ import WaveCounter from "@/components/WaveCounter";
 import FAQ from "@/components/FAQ";
 import Footer from "@/components/Footer";
 import ReferralModal from "@/components/ReferralModal";
-import ToastListener, { setCountCallback } from "@/components/ToastListener";
+import ToastListener, { onNewSignup } from "@/components/ToastListener";
 
 type Status = "idle" | "loading" | "error";
 
@@ -33,11 +33,11 @@ export default function Page() {
       }
     })();
 
-    setCountCallback((delta: number) => {
-      setJoinedCount((c) => c + delta);
+    const unsub = onNewSignup(() => {
+      setJoinedCount((c) => c + 1);
     });
 
-    return () => setCountCallback((() => {}) as any);
+    return unsub;
   }, []);
 
   const handleSubmit = useCallback(async (email: string) => {

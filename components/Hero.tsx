@@ -84,7 +84,7 @@ export default function Hero({
               id="email"
               type="email"
               inputMode="email"
-              placeholder="you@university.edu"
+              placeholder="your@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onBlur={() => setTouched(true)}
