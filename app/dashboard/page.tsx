@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, FormEvent } from "react";
 import { insforge } from "@/lib/insforge";
 import { motion } from "framer-motion";
-import { Users, Mail, TrendingUp, Clock } from "lucide-react";
+import { Users, Mail, TrendingUp, Clock, Lock, ArrowRight, Loader2 } from "lucide-react";
+import Logo from "@/components/Logo";
 
 interface WaitlistEntry {
   id: number;
@@ -13,14 +14,98 @@ interface WaitlistEntry {
   created_at: string;
 }
 
+const SESSION_KEY = "orbius_dashboard_auth";
+
+function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setError(false);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      if (res.ok) {
+        sessionStorage.setItem(SESSION_KEY, "1");
+        onUnlock();
+      } else {
+        setError(true);
+      }
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-cream-100 p-6">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-sm rounded-3xl border border-ink-950/10 bg-cream-50 p-8 text-center"
+      >
+        <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-lime-400 text-ink-950">
+          <Lock size={20} />
+        </span>
+        <h1 className="font-display text-xl font-semibold tracking-tight text-ink-950">
+          Dashboard Access
+        </h1>
+        <p className="mt-1.5 text-sm text-ink-400">
+          Enter the password to view the waitlist dashboard.
+        </p>
+        <form onSubmit={handleSubmit} className="mt-6">
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            className="w-full rounded-full border border-ink-950/15 bg-cream-100 px-5 py-3 text-sm text-ink-950 placeholder:text-ink-400 transition-colors focus:border-ink-950/40"
+            autoFocus
+          />
+          {error && (
+            <p className="mt-2 text-xs text-red-500">Incorrect password. Try again.</p>
+          )}
+          <button
+            type="submit"
+            disabled={loading || !password}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-ink-950 px-6 py-3 text-sm font-semibold text-cream-100 transition-all hover:bg-ink-800 active:scale-[0.98] disabled:opacity-50"
+          >
+            {loading ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <>
+                Unlock <ArrowRight size={16} />
+              </>
+            )}
+          </button>
+        </form>
+      </motion.div>
+    </main>
+  );
+}
+
 export default function Dashboard() {
+  const [unlocked, setUnlocked] = useState(false);
   const [entries, setEntries] = useState<WaitlistEntry[]>([]);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const initialized = useRef(false);
 
   useEffect(() => {
-    if (initialized.current) return;
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      setUnlocked(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!unlocked || initialized.current) return;
     initialized.current = true;
 
     (async () => {
@@ -29,8 +114,8 @@ export default function Dashboard() {
         const json = await res.json();
         if (json.data) setEntries(json.data);
         if (json.count !== undefined) setCount(json.count);
-      } catch (e) {
-        console.error("Failed to load waitlist", e);
+      } catch {
+        // fallback
       } finally {
         setLoading(false);
       }
@@ -38,14 +123,11 @@ export default function Dashboard() {
 
     (async () => {
       try {
-        await insforge.realtime.connect();
-        const sub = await insforge.realtime.subscribe("waitlist:new");
-        if (sub.ok) {
-          insforge.realtime.on("new_signup", (payload: WaitlistEntry) => {
-            setEntries((prev) => [{ ...payload, created_at: payload.created_at || new Date().toISOString() }, ...prev]);
-            setCount((c) => c + 1);
-          });
-        }
+        await insforge.realtime.subscribe("waitlist:new");
+        insforge.realtime.on("new_signup", (payload: WaitlistEntry) => {
+          setEntries((prev) => [{ ...payload, created_at: payload.created_at || new Date().toISOString() }, ...prev]);
+          setCount((c) => c + 1);
+        });
       } catch {
         // realtime not critical
       }
@@ -53,9 +135,12 @@ export default function Dashboard() {
 
     return () => {
       insforge.realtime.unsubscribe("waitlist:new");
-      insforge.realtime.disconnect();
     };
-  }, []);
+  }, [unlocked]);
+
+  if (!unlocked) {
+    return <PasswordGate onUnlock={() => setUnlocked(true)} />;
+  }
 
   return (
     <main className="min-h-screen bg-cream-100 text-ink-950 font-body antialiased">
