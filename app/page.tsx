@@ -73,16 +73,6 @@ export default function Page() {
     }
   }, [refParam]);
 
-  const fetchReferralCount = useCallback(async (code: string) => {
-    try {
-      const res = await fetch(`/api/waitlist?code=${encodeURIComponent(code)}`);
-      const json = await res.json();
-      if (json.count !== undefined) setReferralCount(json.count);
-    } catch {
-      // fallback
-    }
-  }, []);
-
   return (
     <main className="relative min-h-screen overflow-x-hidden">
       <ToastListener />
@@ -100,7 +90,6 @@ export default function Page() {
         position={position}
         referrals={referralCount}
         referralCode={referralCode}
-        onCountUpdate={fetchReferralCount}
       />
     </main>
   );

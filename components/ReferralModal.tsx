@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Copy, PartyPopper, Share2, X } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
-import { insforge } from "@/lib/insforge";
+import { getInsForge } from "@/lib/insforge";
 
 export default function ReferralModal({
   open,
@@ -12,7 +12,6 @@ export default function ReferralModal({
   position,
   referrals,
   referralCode,
-  onCountUpdate,
 }: {
   open: boolean;
   onClose: () => void;
@@ -20,7 +19,6 @@ export default function ReferralModal({
   position: number;
   referrals: number;
   referralCode: string;
-  onCountUpdate?: (code: string) => void;
 }) {
   const [copied, setCopied] = useState(false);
   const [liveCount, setLiveCount] = useState(referrals);
@@ -38,27 +36,27 @@ export default function ReferralModal({
 
     (async () => {
       try {
-        const channel = `referral:${referralCode}`;
+        const insforge = getInsForge();
+        if (!insforge) return;
+
         const res = await insforge.realtime.subscribe("waitlist:new");
         if (!res.ok) return;
 
-        const handler = (payload: { referred_by?: string }) => {
+        insforge.realtime.on("new_signup", (payload: { referred_by?: string }) => {
           if (payload.referred_by === referralCode) {
             setLiveCount((c) => c + 1);
-            onCountUpdate?.(referralCode);
           }
-        };
-
-        insforge.realtime.on("new_signup", handler);
-
-        return () => {
-          insforge.realtime.unsubscribe("waitlist:new");
-        };
+        });
       } catch {
         // realtime not critical
       }
     })();
-  }, [open, referralCode, onCountUpdate]);
+
+    return () => {
+      const insforge = getInsForge();
+      if (insforge) insforge.realtime.unsubscribe("waitlist:new");
+    };
+  }, [open, referralCode]);
 
   async function copyLink() {
     try {

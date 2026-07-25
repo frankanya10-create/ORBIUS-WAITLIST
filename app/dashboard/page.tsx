@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, FormEvent } from "react";
-import { insforge } from "@/lib/insforge";
+import { getInsForge } from "@/lib/insforge";
 import { motion } from "framer-motion";
 import { Users, Mail, TrendingUp, Clock, Lock, ArrowRight, Loader2 } from "lucide-react";
 import Logo from "@/components/Logo";
@@ -123,8 +123,10 @@ export default function Dashboard() {
 
     (async () => {
       try {
-        await insforge.realtime.subscribe("waitlist:new");
-        insforge.realtime.on("new_signup", (payload: WaitlistEntry) => {
+        const insf = getInsForge();
+        if (!insf) return;
+        await insf.realtime.subscribe("waitlist:new");
+        insf.realtime.on("new_signup", (payload: WaitlistEntry) => {
           setEntries((prev) => [{ ...payload, created_at: payload.created_at || new Date().toISOString() }, ...prev]);
           setCount((c) => c + 1);
         });
@@ -134,7 +136,8 @@ export default function Dashboard() {
     })();
 
     return () => {
-      insforge.realtime.unsubscribe("waitlist:new");
+      const insf = getInsForge();
+      if (insf) insf.realtime.unsubscribe("waitlist:new");
     };
   }, [unlocked]);
 

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import toast from "react-hot-toast";
-import { insforge } from "@/lib/insforge";
+import { getInsForge } from "@/lib/insforge";
 
 let countSubscriber: (() => void) | null = null;
 
@@ -17,6 +17,9 @@ export default function ToastListener() {
 
     (async () => {
       try {
+        const insforge = getInsForge();
+        if (!insforge) return;
+
         const res = await insforge.realtime.subscribe("waitlist:new");
         if (!res.ok || cancelled) return;
 
@@ -49,7 +52,8 @@ export default function ToastListener() {
 
     return () => {
       cancelled = true;
-      insforge.realtime.unsubscribe("waitlist:new");
+      const insforge = getInsForge();
+      if (insforge) insforge.realtime.unsubscribe("waitlist:new");
     };
   }, []);
 
