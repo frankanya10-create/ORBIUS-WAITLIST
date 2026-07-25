@@ -1,0 +1,89 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import Nav from "@/components/Nav";
+import Hero from "@/components/Hero";
+import FeatureCards from "@/components/FeatureCards";
+import WaveCounter from "@/components/WaveCounter";
+import FAQ from "@/components/FAQ";
+import Footer from "@/components/Footer";
+import ReferralModal from "@/components/ReferralModal";
+import ToastListener, { setCountCallback } from "@/components/ToastListener";
+
+type Status = "idle" | "loading" | "error";
+
+export default function Page() {
+  const [status, setStatus] = useState<Status>("idle");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
+  const [position, setPosition] = useState(0);
+  const [joinedCount, setJoinedCount] = useState(0);
+  const [referrals] = useState(1);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/waitlist");
+        const json = await res.json();
+        if (json.count !== undefined) {
+          setJoinedCount(json.count);
+        }
+      } catch {
+        // fallback
+      }
+    })();
+
+    setCountCallback((delta: number) => {
+      setJoinedCount((c) => c + delta);
+    });
+
+    return () => setCountCallback((() => {}) as any);
+  }, []);
+
+  const handleSubmit = useCallback(async (email: string) => {
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        if (res.status === 409) {
+          setStatus("idle");
+          return;
+        }
+        setStatus("error");
+        return;
+      }
+      setReferralCode(json.data.referral_code);
+      setPosition(json.data.position);
+      setJoinedCount((c) => c + 1);
+      setStatus("idle");
+      setModalOpen(true);
+    } catch {
+      setStatus("error");
+    }
+  }, []);
+
+  return (
+    <main className="relative min-h-screen overflow-x-hidden">
+      <ToastListener />
+      <Nav />
+      <Hero onSubmit={handleSubmit} status={status} joinedCount={joinedCount} />
+      <FeatureCards />
+      <WaveCounter joinedCount={joinedCount} />
+      <FAQ />
+      <Footer />
+
+      <ReferralModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        referralLink={`https://orbius.app/r/${referralCode}`}
+        position={position}
+        referrals={referrals}
+      />
+    </main>
+  );
+}

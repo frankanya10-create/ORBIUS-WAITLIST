@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-cream-100 text-ink-950 font-body antialiased;
+}
+
+::selection {
+  background-color: #141310;
+  color: #f4efe4;
+}
+
+:focus-visible {
+  outline: 2px solid #141310;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Highlighter-style underline swipe, tuned for light backgrounds */
+.highlight {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+.highlight::before {
+  content: "";
+  position: absolute;
+  left: -0.12em;
+  right: -0.12em;
+  bottom: 0.03em;
+  top: 0.34em;
+  background: #cdf13c;
+  transform-origin: left center;
+  transform: scaleX(0);
+  z-index: -1;
+  border-radius: 2px 8px 3px 6px;
+  animation: marker 0.7s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+  animation-delay: var(--highlight-delay, 0.4s);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
