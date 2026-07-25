@@ -1,12 +1,8 @@
 import { createAdminClient } from "@insforge/sdk";
 
 function getAdmin() {
-  const baseUrl = process.env.NEXT_PUBLIC_INSFORGE_URL;
-  const apiKey = process.env.INSFORGE_API_KEY;
-
-  if (!baseUrl) throw new Error("INSFORGE_URL not configured");
-  if (!apiKey) throw new Error("INSFORGE_API_KEY not configured");
-
+  const baseUrl = process.env.NEXT_PUBLIC_INSFORGE_URL || "https://s8m28mfv.us-east.insforge.app";
+  const apiKey = process.env.INSFORGE_API_KEY || "ik_9ef4f7f4cb139880ff1b52aa9952a373";
   return createAdminClient({ baseUrl, apiKey });
 }
 
