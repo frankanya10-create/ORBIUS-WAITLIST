@@ -30,12 +30,6 @@ export default function Nav() {
 
       <div className="flex items-center gap-2">
         <a
-          href="/dashboard"
-          className="rounded-full border border-ink-950/10 bg-cream-50 px-3 py-2 font-mono text-[10px] text-ink-400 transition-colors hover:text-ink-950 sm:px-4 sm:text-[11px]"
-        >
-          Dashboard
-        </a>
-        <a
           href="#waitlist"
           className="hidden items-center gap-1.5 rounded-full bg-ink-950 px-5 py-2.5 text-sm font-medium text-cream-100 transition-colors hover:bg-ink-800 sm:flex"
         >
