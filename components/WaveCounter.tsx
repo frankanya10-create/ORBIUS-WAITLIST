@@ -20,7 +20,7 @@ function getWaveConfig(waveNum: number) {
       return {
         tag: "Wave 02",
         title: "Campus Early Access",
-        detail: "Unlocks school-by-school as referrals hit threshold",
+        detail: "Unlocks school-by-school as the list grows",
         getLabel: (count: number) => (count >= WAVE_01_CAPACITY ? "next" : "locked"),
         getFill: (count: number) =>
           count >= WAVE_01_CAPACITY

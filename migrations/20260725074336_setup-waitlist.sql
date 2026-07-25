@@ -1,8 +1,6 @@
 CREATE TABLE IF NOT EXISTS public.waitlist (
   id BIGSERIAL PRIMARY KEY,
   email TEXT NOT NULL UNIQUE,
-  referral_code TEXT,
-  referred_by TEXT,
   university TEXT,
   position BIGSERIAL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()

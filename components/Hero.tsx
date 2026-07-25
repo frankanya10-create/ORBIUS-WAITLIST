@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, ChevronDown, Loader2 } from "lucide-react";
+import { ArrowRight, ChevronDown, Loader2, CheckCircle } from "lucide-react";
 import { FormEvent, useState } from "react";
 
 type Status = "idle" | "loading" | "error" | "success";
@@ -11,11 +11,13 @@ export default function Hero({
   status,
   joinedCount,
   errorMessage,
+  position,
 }: {
   onSubmit: (email: string, university: string) => Promise<void>;
   status: Status;
   joinedCount: number;
   errorMessage?: string;
+  position: number;
 }) {
   const [email, setEmail] = useState("");
   const [university, setUniversity] = useState("");
@@ -71,65 +73,83 @@ export default function Hero({
           through the cracks, on either side of the lecture hall.
         </motion.p>
 
-        <motion.form
-          id="waitlist"
-          onSubmit={handleSubmit}
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.25 }}
-          className="mt-9 max-w-md space-y-3"
-          noValidate
-        >
-          <div>
-            <label htmlFor="email" className="sr-only">Campus email</label>
-            <input
-              id="email"
-              type="email"
-              inputMode="email"
-              placeholder="your@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onBlur={() => setTouched(true)}
-              className="w-full rounded-full border border-ink-950/15 bg-cream-50 px-5 py-3.5 text-sm text-ink-950 placeholder:text-ink-400 transition-colors focus:border-ink-950/40"
-            />
-            {touched && !isValid && (
-              <p className="mt-1.5 pl-2 text-left text-xs text-red-500">
-                Enter a valid email to join.
-              </p>
-            )}
-          </div>
-          <div>
-            <label htmlFor="university" className="sr-only">University</label>
-            <input
-              id="university"
-              type="text"
-              placeholder="Your University (optional)"
-              value={university}
-              onChange={(e) => setUniversity(e.target.value)}
-              className="w-full rounded-full border border-ink-950/15 bg-cream-50 px-5 py-3.5 text-sm text-ink-950 placeholder:text-ink-400 transition-colors focus:border-ink-950/40"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={status === "loading"}
-            className="group flex w-full items-center justify-center gap-2 rounded-full bg-ink-950 px-6 py-3.5 text-sm font-semibold text-cream-100 transition-all hover:bg-ink-800 active:scale-[0.98] disabled:opacity-70"
+        {status === "success" ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mt-9 rounded-3xl border border-lime-400/30 bg-lime-400/10 p-8 text-center"
           >
-            {status === "loading" ? (
-              <>
-                <Loader2 size={16} className="animate-spin" />
-                Joining...
-              </>
-            ) : (
-              <>
-                Join Waitlist
-                <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
-              </>
+            <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-lime-400 text-ink-950">
+              <CheckCircle size={24} />
+            </span>
+            <h2 className="font-display text-2xl font-semibold tracking-tight text-ink-950">
+              You&rsquo;re on the list!
+            </h2>
+            <p className="mt-2 text-sm text-ink-500">
+              You&rsquo;re #{position} in line. We&rsquo;ll notify you when Orbius launches.
+            </p>
+          </motion.div>
+        ) : (
+          <motion.form
+            id="waitlist"
+            onSubmit={handleSubmit}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.25 }}
+            className="mt-9 max-w-md space-y-3"
+            noValidate
+          >
+            <div>
+              <label htmlFor="email" className="sr-only">Campus email</label>
+              <input
+                id="email"
+                type="email"
+                inputMode="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onBlur={() => setTouched(true)}
+                className="w-full rounded-full border border-ink-950/15 bg-cream-50 px-5 py-3.5 text-sm text-ink-950 placeholder:text-ink-400 transition-colors focus:border-ink-950/40"
+              />
+              {touched && !isValid && (
+                <p className="mt-1.5 pl-2 text-left text-xs text-red-500">
+                  Enter a valid email to join.
+                </p>
+              )}
+            </div>
+            <div>
+              <label htmlFor="university" className="sr-only">University</label>
+              <input
+                id="university"
+                type="text"
+                placeholder="Your University (optional)"
+                value={university}
+                onChange={(e) => setUniversity(e.target.value)}
+                className="w-full rounded-full border border-ink-950/15 bg-cream-50 px-5 py-3.5 text-sm text-ink-950 placeholder:text-ink-400 transition-colors focus:border-ink-950/40"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={status === "loading"}
+              className="group flex w-full items-center justify-center gap-2 rounded-full bg-ink-950 px-6 py-3.5 text-sm font-semibold text-cream-100 transition-all hover:bg-ink-800 active:scale-[0.98] disabled:opacity-70"
+            >
+              {status === "loading" ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Joining...
+                </>
+              ) : (
+                <>
+                  Join Waitlist
+                  <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
+                </>
+              )}
+            </button>
+            {status === "error" && errorMessage && (
+              <p className="mt-2 text-xs text-red-500">{errorMessage}</p>
             )}
-          </button>
-          {status === "error" && errorMessage && (
-            <p className="mt-2 text-xs text-red-500">{errorMessage}</p>
-          )}
-        </motion.form>
+          </motion.form>
+        )}
 
         <motion.div
           initial={{ opacity: 0 }}

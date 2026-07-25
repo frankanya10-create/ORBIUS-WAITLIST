@@ -10,7 +10,6 @@ interface WaitlistEntry {
   id: number;
   email: string;
   university?: string;
-  referral_code: string;
   position: number;
   created_at: string;
 }
@@ -236,9 +235,6 @@ export default function Dashboard() {
                       </p>
                     </div>
                   </div>
-                  <span className="rounded-full bg-ink-950/5 px-2.5 py-1 font-mono text-[10px] text-ink-400">
-                    {entry.referral_code}
-                  </span>
                 </motion.div>
               ))}
             </div>

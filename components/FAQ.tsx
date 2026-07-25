@@ -7,7 +7,7 @@ import { useState } from "react";
 const items = [
   {
     q: "When is launch?",
-    a: "Closed Beta opens as soon as the first 50 spots are claimed — we're most of the way there. Campus Early Access follows a few weeks after, school by school, based on referral activity.",
+    a: "Closed Beta opens as soon as the first 50 spots are claimed — we're most of the way there. Campus Early Access follows a few weeks after, school by school.",
   },
   {
     q: "Is Orbius free?",
@@ -15,7 +15,7 @@ const items = [
   },
   {
     q: "How does the waitlist work?",
-    a: "Your spot is set by signup time, but referrals move you up. Share your link with 3 classmates and you skip straight to Priority Access.",
+    a: "Your spot is set by signup time. The earlier you join, the higher your position on the list.",
   },
 ];
 

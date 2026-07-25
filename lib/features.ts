@@ -129,25 +129,6 @@ export const features: Feature[] = [
       "Event RSVPs sync straight into your Timetable",
     ],
   },
-  {
-    id: "priority-access",
-    audience: "student",
-    tag: "Bonus",
-    tagNote: "Skip the line",
-    title: "Priority Access",
-    bg: "bg-lavender-400",
-    summary: "Refer 3 classmates and jump straight to the front of the closed beta.",
-    tagline: "Bring your friends, skip the wait.",
-    description:
-      "Every referral moves you up the waitlist. Get 3 classmates to sign up with your link and you're bumped straight into Wave 01 — the closed beta — with direct access to the founding team's feedback channel.",
-    bullets: [
-      "Each confirmed referral moves your position up the list",
-      "3 referrals unlocks Wave 01 closed beta, guaranteed",
-      "Founding beta users get a direct line to the product team",
-      "Track your referral progress live from the confirmation screen",
-    ],
-  },
-
   // ---------- LECTURER SIDE ----------
   {
     id: "course-overview",
