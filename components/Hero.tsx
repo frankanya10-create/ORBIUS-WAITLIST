@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, ChevronDown, Loader2 } from "lucide-react";
 import { FormEvent, useState } from "react";
 
 type Status = "idle" | "loading" | "error" | "success";
@@ -128,6 +128,21 @@ export default function Hero({
           </span>
         </motion.div>
       </div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.2 }}
+        className="sm:hidden absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1"
+      >
+        <span className="font-mono text-[10px] uppercase tracking-widest text-ink-400">Scroll</span>
+        <motion.div
+          animate={{ y: [0, 6, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <ChevronDown size={16} className="text-ink-400" />
+        </motion.div>
+      </motion.div>
     </section>
   );
 }
