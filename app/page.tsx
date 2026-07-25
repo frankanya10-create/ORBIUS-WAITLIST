@@ -18,16 +18,21 @@ export default function Page() {
   const [referralCode, setReferralCode] = useState("");
   const [position, setPosition] = useState(0);
   const [joinedCount, setJoinedCount] = useState(0);
-  const [referrals] = useState(1);
+  const [referralCount, setReferralCount] = useState(0);
+  const [refParam, setRefParam] = useState("");
+  const [baseUrl, setBaseUrl] = useState("");
 
   useEffect(() => {
+    setBaseUrl(window.location.origin);
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
+    if (ref) setRefParam(ref);
+
     (async () => {
       try {
         const res = await fetch("/api/waitlist");
         const json = await res.json();
-        if (json.count !== undefined) {
-          setJoinedCount(json.count);
-        }
+        if (json.count !== undefined) setJoinedCount(json.count);
       } catch {
         // fallback
       }
@@ -43,27 +48,38 @@ export default function Page() {
   const handleSubmit = useCallback(async (email: string) => {
     setStatus("loading");
     try {
+      const body: Record<string, string> = { email };
+      if (refParam) body.ref = refParam;
+
       const res = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify(body),
       });
       const json = await res.json();
       if (!res.ok) {
-        if (res.status === 409) {
-          setStatus("idle");
-          return;
-        }
+        if (res.status === 409) { setStatus("idle"); return; }
         setStatus("error");
         return;
       }
       setReferralCode(json.data.referral_code);
       setPosition(json.data.position);
+      setReferralCount(json.referralCount || 0);
       setJoinedCount((c) => c + 1);
       setStatus("idle");
       setModalOpen(true);
     } catch {
       setStatus("error");
+    }
+  }, [refParam]);
+
+  const fetchReferralCount = useCallback(async (code: string) => {
+    try {
+      const res = await fetch(`/api/waitlist?code=${encodeURIComponent(code)}`);
+      const json = await res.json();
+      if (json.count !== undefined) setReferralCount(json.count);
+    } catch {
+      // fallback
     }
   }, []);
 
@@ -80,9 +96,11 @@ export default function Page() {
       <ReferralModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        referralLink={`https://orbius.app/r/${referralCode}`}
+        referralLink={`${baseUrl}/r/${referralCode}`}
         position={position}
-        referrals={referrals}
+        referrals={referralCount}
+        referralCode={referralCode}
+        onCountUpdate={fetchReferralCount}
       />
     </main>
   );

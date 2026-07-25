@@ -2,7 +2,8 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Copy, PartyPopper, Share2, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { insforge } from "@/lib/insforge";
 
 export default function ReferralModal({
   open,
@@ -10,16 +11,54 @@ export default function ReferralModal({
   referralLink,
   position,
   referrals,
+  referralCode,
+  onCountUpdate,
 }: {
   open: boolean;
   onClose: () => void;
   referralLink: string;
   position: number;
   referrals: number;
+  referralCode: string;
+  onCountUpdate?: (code: string) => void;
 }) {
   const [copied, setCopied] = useState(false);
+  const [liveCount, setLiveCount] = useState(referrals);
   const goal = 3;
-  const progress = Math.min(referrals / goal, 1);
+  const progress = Math.min(liveCount / goal, 1);
+  const subscribed = useRef(false);
+
+  useEffect(() => {
+    setLiveCount(referrals);
+  }, [referrals]);
+
+  useEffect(() => {
+    if (!open || !referralCode || subscribed.current) return;
+    subscribed.current = true;
+
+    (async () => {
+      try {
+        const channel = `referral:${referralCode}`;
+        const res = await insforge.realtime.subscribe("waitlist:new");
+        if (!res.ok) return;
+
+        const handler = (payload: { referred_by?: string }) => {
+          if (payload.referred_by === referralCode) {
+            setLiveCount((c) => c + 1);
+            onCountUpdate?.(referralCode);
+          }
+        };
+
+        insforge.realtime.on("new_signup", handler);
+
+        return () => {
+          insforge.realtime.unsubscribe("waitlist:new");
+        };
+      } catch {
+        // realtime not critical
+      }
+    })();
+  }, [open, referralCode, onCountUpdate]);
 
   async function copyLink() {
     try {
@@ -27,7 +66,7 @@ export default function ReferralModal({
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {
-      // clipboard may be unavailable in some environments — fail silently
+      // clipboard may be unavailable
     }
   }
 
@@ -66,7 +105,7 @@ export default function ReferralModal({
             </span>
 
             <h3 className="font-display text-2xl font-semibold tracking-tight text-ink-950">
-              You're on the list.
+              You&apos;re on the list.
             </h3>
             <p className="mt-1.5 font-mono text-xs text-ink-400">
               Position #{position}
@@ -80,7 +119,7 @@ export default function ReferralModal({
 
             <div className="mt-5">
               <div className="mb-2 flex items-center justify-between font-mono text-[11px] text-ink-400">
-                <span>{referrals} / {goal} referrals</span>
+                <span>{liveCount} / {goal} referrals</span>
                 <span>{Math.round(progress * 100)}%</span>
               </div>
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-ink-950/10">
