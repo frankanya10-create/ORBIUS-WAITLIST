@@ -23,14 +23,14 @@ export default function ToastListener() {
         const res = await insforge.realtime.subscribe("waitlist:new");
         if (!res.ok || cancelled) return;
 
-        insforge.realtime.on("new_signup", (payload: { email?: string }) => {
+        insforge.realtime.on("new_signup", (payload: { email?: string; university?: string }) => {
           if (cancelled) return;
           countSubscriber?.();
           toast.success(
             <div>
               <span className="font-semibold">Yayyy! Stay tuned for something amazing!</span>
               <br />
-              <span className="text-xs opacity-80">{payload.email || "Someone"} joined the waitlist</span>
+              <span className="text-xs opacity-80">{payload.email || "Someone"} joined{payload.university ? ` from ${payload.university}` : ""}</span>
             </div>,
             {
               duration: 5000,

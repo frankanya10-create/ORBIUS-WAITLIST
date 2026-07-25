@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS public.waitlist (
   email TEXT NOT NULL UNIQUE,
   referral_code TEXT,
   referred_by TEXT,
+  university TEXT,
   position BIGSERIAL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -48,6 +49,7 @@ BEGIN
     jsonb_build_object(
       'id', NEW.id,
       'email', NEW.email,
+      'university', NEW.university,
       'position', NEW.position,
       'created_at', NEW.created_at
     )

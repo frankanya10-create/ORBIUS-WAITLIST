@@ -9,6 +9,7 @@ import Logo from "@/components/Logo";
 interface WaitlistEntry {
   id: number;
   email: string;
+  university?: string;
   referral_code: string;
   position: number;
   created_at: string;
@@ -225,6 +226,7 @@ export default function Dashboard() {
                     <div>
                       <p className="text-sm font-medium text-ink-950">{entry.email}</p>
                       <p className="font-mono text-[11px] text-ink-400">
+                        {entry.university ? `${entry.university} · ` : ""}
                         {new Date(entry.created_at).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",

@@ -46,11 +46,12 @@ export default function Page() {
     return unsub;
   }, []);
 
-  const handleSubmit = useCallback(async (email: string) => {
+  const handleSubmit = useCallback(async (email: string, university: string) => {
     setStatus("loading");
     setErrorMessage("");
     try {
       const body: Record<string, string> = { email };
+      if (university) body.university = university;
       if (refParam) body.ref = refParam;
 
       const res = await fetch("/api/waitlist", {

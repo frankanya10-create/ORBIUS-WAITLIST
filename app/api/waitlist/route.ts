@@ -13,7 +13,7 @@ function getAdmin() {
 export async function POST(req: Request) {
   try {
     const adminClient = getAdmin();
-    const { email, ref } = await req.json();
+    const { email, university, ref } = await req.json();
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return Response.json({ error: "Invalid email" }, { status: 400 });
@@ -28,6 +28,9 @@ export async function POST(req: Request) {
     const referralCode = base + "-" + Math.random().toString(36).slice(2, 6);
 
     const payload: Record<string, string> = { email, referral_code: referralCode };
+    if (university && typeof university === "string") {
+      payload.university = university.trim();
+    }
     if (ref && typeof ref === "string" && ref.length > 3) {
       payload.referred_by = ref;
     }

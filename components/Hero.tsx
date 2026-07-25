@@ -12,12 +12,13 @@ export default function Hero({
   joinedCount,
   errorMessage,
 }: {
-  onSubmit: (email: string) => Promise<void>;
+  onSubmit: (email: string, university: string) => Promise<void>;
   status: Status;
   joinedCount: number;
   errorMessage?: string;
 }) {
   const [email, setEmail] = useState("");
+  const [university, setUniversity] = useState("");
   const [touched, setTouched] = useState(false);
 
   const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -26,8 +27,9 @@ export default function Hero({
     e.preventDefault();
     setTouched(true);
     if (!isValid || status === "loading") return;
-    await onSubmit(email);
+    await onSubmit(email, university);
     setEmail("");
+    setUniversity("");
     setTouched(false);
   }
 
@@ -75,13 +77,11 @@ export default function Hero({
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.25 }}
-          className="mt-9 flex max-w-md flex-col gap-3 sm:flex-row"
+          className="mt-9 max-w-md space-y-3"
           noValidate
         >
-          <div className="flex-1">
-            <label htmlFor="email" className="sr-only">
-              Campus email
-            </label>
+          <div>
+            <label htmlFor="email" className="sr-only">Campus email</label>
             <input
               id="email"
               type="email"
@@ -98,10 +98,21 @@ export default function Hero({
               </p>
             )}
           </div>
+          <div>
+            <label htmlFor="university" className="sr-only">University</label>
+            <input
+              id="university"
+              type="text"
+              placeholder="Your University (optional)"
+              value={university}
+              onChange={(e) => setUniversity(e.target.value)}
+              className="w-full rounded-full border border-ink-950/15 bg-cream-50 px-5 py-3.5 text-sm text-ink-950 placeholder:text-ink-400 transition-colors focus:border-ink-950/40"
+            />
+          </div>
           <button
             type="submit"
             disabled={status === "loading"}
-            className="group flex shrink-0 items-center justify-center gap-2 rounded-full bg-ink-950 px-6 py-3.5 text-sm font-semibold text-cream-100 transition-all hover:bg-ink-800 active:scale-[0.98] disabled:opacity-70"
+            className="group flex w-full items-center justify-center gap-2 rounded-full bg-ink-950 px-6 py-3.5 text-sm font-semibold text-cream-100 transition-all hover:bg-ink-800 active:scale-[0.98] disabled:opacity-70"
           >
             {status === "loading" ? (
               <>
@@ -111,10 +122,7 @@ export default function Hero({
             ) : (
               <>
                 Join Waitlist
-                <ArrowRight
-                  size={16}
-                  className="transition-transform group-hover:translate-x-0.5"
-                />
+                <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
               </>
             )}
           </button>
