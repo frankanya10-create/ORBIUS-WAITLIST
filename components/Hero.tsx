@@ -26,6 +26,7 @@ export default function Hero({
     if (!isValid || status === "loading") return;
     await onSubmit(email);
     setEmail("");
+    setTouched(false);
   }
 
   return (
