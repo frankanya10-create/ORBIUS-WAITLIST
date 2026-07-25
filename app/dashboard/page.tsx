@@ -96,6 +96,7 @@ export default function Dashboard() {
   const [entries, setEntries] = useState<WaitlistEntry[]>([]);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const initialized = useRef(false);
 
   useEffect(() => {
@@ -112,10 +113,11 @@ export default function Dashboard() {
       try {
         const res = await fetch("/api/waitlist");
         const json = await res.json();
+        if (!res.ok) { setError(json.error || "Failed to load"); return; }
         if (json.data) setEntries(json.data);
         if (json.count !== undefined) setCount(json.count);
       } catch {
-        // fallback
+        setError("Network error. Check your connection.");
       } finally {
         setLoading(false);
       }
@@ -200,6 +202,8 @@ export default function Dashboard() {
             <div className="flex items-center justify-center py-16">
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink-950 border-t-transparent" />
             </div>
+          ) : error ? (
+            <div className="py-16 text-center font-mono text-sm text-red-500">{error}</div>
           ) : entries.length === 0 ? (
             <div className="py-16 text-center font-mono text-sm text-ink-400">
               No signups yet. Share the waitlist!

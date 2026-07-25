@@ -14,6 +14,7 @@ type Status = "idle" | "loading" | "error";
 
 export default function Page() {
   const [status, setStatus] = useState<Status>("idle");
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const [modalOpen, setModalOpen] = useState(false);
   const [referralCode, setReferralCode] = useState("");
   const [position, setPosition] = useState(0);
@@ -47,6 +48,7 @@ export default function Page() {
 
   const handleSubmit = useCallback(async (email: string) => {
     setStatus("loading");
+    setErrorMessage("");
     try {
       const body: Record<string, string> = { email };
       if (refParam) body.ref = refParam;
@@ -58,8 +60,8 @@ export default function Page() {
       });
       const json = await res.json();
       if (!res.ok) {
-        if (res.status === 409) { setStatus("idle"); return; }
         setStatus("error");
+        setErrorMessage(json.error || "Something went wrong. Try again.");
         return;
       }
       setReferralCode(json.data.referral_code);
@@ -70,6 +72,7 @@ export default function Page() {
       setModalOpen(true);
     } catch {
       setStatus("error");
+      setErrorMessage("Network error. Check your connection.");
     }
   }, [refParam]);
 
@@ -77,7 +80,7 @@ export default function Page() {
     <main className="relative min-h-screen overflow-x-hidden">
       <ToastListener />
       <Nav />
-      <Hero onSubmit={handleSubmit} status={status} joinedCount={joinedCount} />
+      <Hero onSubmit={handleSubmit} status={status} joinedCount={joinedCount} errorMessage={errorMessage} />
       <FeatureCards />
       <WaveCounter joinedCount={joinedCount} />
       <FAQ />

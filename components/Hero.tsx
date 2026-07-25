@@ -10,10 +10,12 @@ export default function Hero({
   onSubmit,
   status,
   joinedCount,
+  errorMessage,
 }: {
   onSubmit: (email: string) => Promise<void>;
   status: Status;
   joinedCount: number;
+  errorMessage?: string;
 }) {
   const [email, setEmail] = useState("");
   const [touched, setTouched] = useState(false);
@@ -116,6 +118,9 @@ export default function Hero({
               </>
             )}
           </button>
+          {status === "error" && errorMessage && (
+            <p className="mt-2 text-xs text-red-500">{errorMessage}</p>
+          )}
         </motion.form>
 
         <motion.div

@@ -1,15 +1,13 @@
 import { createAdminClient } from "@insforge/sdk";
 
-let admin: ReturnType<typeof createAdminClient>;
-
 function getAdmin() {
-  if (!admin) {
-    admin = createAdminClient({
-      baseUrl: process.env.NEXT_PUBLIC_INSFORGE_URL!,
-      apiKey: process.env.INSFORGE_API_KEY!,
-    });
-  }
-  return admin;
+  const baseUrl = process.env.NEXT_PUBLIC_INSFORGE_URL;
+  const apiKey = process.env.INSFORGE_API_KEY;
+
+  if (!baseUrl) throw new Error("INSFORGE_URL not configured");
+  if (!apiKey) throw new Error("INSFORGE_API_KEY not configured");
+
+  return createAdminClient({ baseUrl, apiKey });
 }
 
 export async function POST(req: Request) {
@@ -26,7 +24,8 @@ export async function POST(req: Request) {
       return Response.json({ error: "Already on the waitlist" }, { status: 409 });
     }
 
-    const referralCode = email.split("@")[0]?.replace(/[^a-zA-Z0-9]/g, "").slice(0, 8).toLowerCase() + "-" + Math.random().toString(36).slice(2, 6);
+    const base = email.split("@")[0]?.replace(/[^a-zA-Z0-9]/g, "").slice(0, 8).toLowerCase() || "user";
+    const referralCode = base + "-" + Math.random().toString(36).slice(2, 6);
 
     const payload: Record<string, string> = { email, referral_code: referralCode };
     if (ref && typeof ref === "string" && ref.length > 3) {
@@ -34,7 +33,6 @@ export async function POST(req: Request) {
     }
 
     const { data, error } = await adminClient.database.from("waitlist").insert([payload]).select().single();
-
     if (error) {
       return Response.json({ error: error.message }, { status: 500 });
     }
@@ -46,8 +44,9 @@ export async function POST(req: Request) {
     }
 
     return Response.json({ data, referralCount }, { status: 201 });
-  } catch {
-    return Response.json({ error: "Internal server error" }, { status: 500 });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Internal server error";
+    return Response.json({ error: message }, { status: 500 });
   }
 }
 
@@ -63,7 +62,6 @@ export async function GET(req: Request) {
     }
 
     const { data, error } = await adminClient.database.from("waitlist").select("*").order("created_at", { ascending: false });
-
     if (error) {
       return Response.json({ error: error.message }, { status: 500 });
     }
@@ -71,7 +69,8 @@ export async function GET(req: Request) {
     const { count } = await adminClient.database.from("waitlist").select("*", { count: "exact", head: true });
 
     return Response.json({ data, count });
-  } catch {
-    return Response.json({ error: "Internal server error" }, { status: 500 });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Internal server error";
+    return Response.json({ error: message }, { status: 500 });
   }
 }
